@@ -4,6 +4,8 @@ library(tigris)
 library(viridis)
 library(tidyverse)
 library(scales)
+library(plyr)
+library(dplyr)
 
 nh <- summarized_county_annual(state="NH", key="WaPo")
 
@@ -53,5 +55,107 @@ nh <- left_join(nh, population)
 
 nh$pills_per = nh$DOSAGE_UNIT/nh$population
 
-nh
+ddply(nh, .(BUYER_COUNTY), summarise, mean=mean(pills_per), sum=sum(pills_per), min=min(pills_per), max=max(pills_per), maxdiff = max(pills_per)-min(pills_per))
 
+#clearly, Coos and Grafton Counties experienced the most per capita change overall. These are rural counties.
+
+#let's use WaPo's guide to find the most per capita pharmacies (grouped by county as well...):
+#https://wpinvestigative.github.io/arcos/articles/per-capita-pharmacies.html
+
+packages <- c("tidyverse", "jsonlite", "knitr", "geofacet", "scales", "data.table", "vroom","formattable")
+if (length(setdiff(packages, rownames(installed.packages()))) > 0)
+  {install.packages(setdiff(packages, rownames(installed.packages())), repos = "http://cran.us.r-project.org")}
+
+library(arcos)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(formattable)
+library(vroom)
+library(stringr)
+library(scales)
+library(knitr)
+
+new_hampshire <- total_pharmacies_state(state="NH", key="WaPo")
+
+kable(head(new_hampshire))
+
+
+kable(head(population))
+#need to rerun this, different agg:
+population <- county_population(state="NH", key="WaPo")
+
+kable(head(population))
+
+#had to rewrite this bit:
+population <- population %>%
+  group_by(BUYER_COUNTY, BUYER_STATE, countyfips) %>%
+  summarise_at(vars(population), funs(mean(., na.rm=TRUE)))
+
+population <- rename(population, replace = c("BUYER_COUNTY"="buyer_county"))
+population <- rename(population, replace = c("BUYER_STATE"="buyer_state"))
+population <- rename(population, replace = c("population"="average_population"))
+
+## Join the data
+nh_joined <- left_join(new_hampshire, population)
+#> Joining, by = c("buyer_state", "buyer_county")
+
+kable(head(nh_joined))
+
+#want to get pills per person per year:
+nh_joined <- nh_joined %>% 
+  mutate(per_person=total_dosage_unit/average_population/7)
+
+kable(head(nh_joined))
+
+#WaPo does a lot of heavy lifting here - we need to filter so we only have retail/chain pharmacies:
+
+
+## Get a list of addresses because it includes BUYER_BUS_ACT information
+pharmacy_list <- buyer_addresses(state="NH", key="WaPo")
+
+# We just want the BUYER_BUS_ACT to tell if these are practitioners are retail pharmacies
+# This will help us filter out the appropriate pharmacies
+
+pharmacy_list <- pharmacy_list %>% 
+  select(buyer_dea_no=BUYER_DEA_NO, BUYER_BUS_ACT)
+
+# Join to the original data set
+nh_joined <- left_join(nh_joined, pharmacy_list)
+#> Joining, by = "buyer_dea_no"
+
+# Filter the data so we only have retail and chain pharmacies
+nh_joined <- nh_joined %>% 
+  filter(BUYER_BUS_ACT=="RETAIL PHARMACY" | BUYER_BUS_ACT=="CHAIN PHARMACY")
+
+# Just in case, let's get the BUYER_DEA_NO of pharmacies that aren't really pharmacies
+not_pharms <- not_pharmacies(key="WaPo") %>% pull(BUYER_DEA_NO)
+
+# Filter those out, too, if they're in there
+nh_joined <- nh_joined %>% 
+  filter(!buyer_dea_no %in% not_pharms)
+
+# clean up column names so we can make a pretty table
+nh_joined <- nh_joined %>% 
+  select(Pharmacy=buyer_name, City=buyer_city, County=buyer_county, `County population`=average_population,
+         Pills=total_dosage_unit, `Pills per person`=per_person) %>% 
+  mutate(`County population`=round(`County population`),
+         `Pills per person`=round(`Pills per person`, 1)) %>% 
+  arrange(desc(`Pills per person`)) %>% 
+  slice(1:100)
+
+# Create some custome colors
+customGreen0 = "#DeF7E9"
+customGreen = "#71CA97"
+customRed = "#ff7f7f"
+
+# produce a table
+nh_joined %>% 
+  formattable(align=c("l", "l", "l", "r", "r", "r"),
+              list(Pharmacy = formatter("span", style = ~ style(color="grey", font.weight = "bold")),
+                   Pills=color_tile(customGreen0, customGreen),
+                   `Pills per person` = normalize_bar(customRed)
+              ))
+
+#why does Grafton look so dramatic in that chart?
+# consider - number of pharmacies per capita in the two counties?
