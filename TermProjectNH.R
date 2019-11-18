@@ -57,8 +57,8 @@ nh$pills_per = nh$DOSAGE_UNIT/nh$population
 
 ddply(nh, .(BUYER_COUNTY), summarise, mean=mean(pills_per), sum=sum(pills_per), min=min(pills_per), max=max(pills_per), maxdiff = max(pills_per)-min(pills_per))
 
-#clearly, Coos and Grafton Counties experienced the most per capita change overall. These are rural counties.
-
+#clearly, Coos and Carroll Counties experienced the most per capita change overall. These are rural counties.
+# the initial image is misleading; Grafton is not the outlier; those two are.
 #let's use WaPo's guide to find the most per capita pharmacies (grouped by county as well...):
 #https://wpinvestigative.github.io/arcos/articles/per-capita-pharmacies.html
 
