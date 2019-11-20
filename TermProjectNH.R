@@ -7,6 +7,7 @@ library(scales)
 library(plyr)
 library(dplyr)
 
+#using the arcos API to get summarized county data:
 nh <- summarized_county_annual(state="NH", key="WaPo")
 
 kable(head(nh))
@@ -35,6 +36,7 @@ nh %>%
 
 #### NORMALIZED FOR POP:
 
+#pull in population data from WaPo's helpful API
 population <- county_population(state="NH", key="WaPo") %>% 
   # isolate the columns so it doesn't conflict in a join (there are doubles, that's why)
   select(countyfips, year, population)
@@ -51,11 +53,13 @@ left_join(nh, population) %>%
   theme(panel.grid.major = element_line(colour = 'transparent')) +
   labs(title="Oxycodone and hydrocodone pills in New Hampshire per person", caption="Source: The Washington Post, ARCOS")
 
+#let's bring in population more permanently
 nh <- left_join(nh, population)
 
+#calculate pills per person
 nh$pills_per = nh$DOSAGE_UNIT/nh$population
 
-ddply(nh, .(BUYER_COUNTY), summarise, mean=mean(pills_per), sum=sum(pills_per), min=min(pills_per), max=max(pills_per), maxdiff = max(pills_per)-min(pills_per))
+ddply(nh, .(BUYER_COUNTY), summarise, mean=mean(pills_per), min=min(pills_per), max=max(pills_per), maxdiff = max(pills_per)-min(pills_per))
 
 #clearly, Coos and Carroll Counties experienced the most per capita change overall. These are rural counties.
 # the initial image is misleading; Grafton is not the outlier; those two are.
@@ -131,6 +135,12 @@ nh_joined <- nh_joined %>%
 # Just in case, let's get the BUYER_DEA_NO of pharmacies that aren't really pharmacies
 not_pharms <- not_pharmacies(key="WaPo") %>% pull(BUYER_DEA_NO)
 
+# 
+#what_we_omit <- nh_joined %>% 
+#  filter(buyer_dea_no %in% not_pharms)
+
+#kable(head(what_we_omit))
+
 # Filter those out, too, if they're in there
 nh_joined <- nh_joined %>% 
   filter(!buyer_dea_no %in% not_pharms)
@@ -159,3 +169,11 @@ nh_joined %>%
 
 #why does Grafton look so dramatic in that chart?
 # consider - number of pharmacies per capita in the two counties?
+
+#further changes for analysis:
+# not all pharmacies operated/reported/sold opioids for all years.
+# in Coos County, only a few have reports for all years.
+# perhaps a better analysis across the state would be by year, not average pop.
+# find max pills/person/year by pharmacy, report on that instead.
+
+#there also appeared to be some legislation that went into place in ~2009 meant to control dispensing.
