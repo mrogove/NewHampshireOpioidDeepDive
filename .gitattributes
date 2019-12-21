@@ -1,0 +1,2 @@
+* linguist-vendored
+*.pyspark linguist-vendored=false
