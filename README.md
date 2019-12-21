@@ -3,7 +3,10 @@ Term Project for Tufts University's COMP119 Big Data course, Fall 2019
 
 R API examples adapted [from WaPo ARCOS stories](https://wpinvestigative.github.io/arcos/).
 
-All Python/Pyspark code and R code adaptation/troubleshooting by MRogove
+ARCOS/Opioid Data courtesy Washington Post. Social Vulnerability Index from CDC. GIS shapefiles from Census Bureau.
+
+All Python/Pyspark code and R code adaptation/troubleshooting by Michael Rogove
+QGIS images produced by Megana Lakshmi Padmanabhan
 
 Michael Rogove | Megana Lakshmi Padmanabhan | Kevin Hederman
 
