@@ -1,7 +1,24 @@
 # README
-COMP119 Big Data Fall 2019 Term Project
+Term Project for Tufts University's COMP119 Big Data course, Fall 2019
+R API examples borrowed liberally from WaPo ARCOS stories.
+All R adaptation, PySpark, and Python code by MRogove
 
 Michael Rogove | Megana Lakshmi Padmanabhan | Kevin Hederman
+
+Project Highlights
+----
+### Using R to reproduce work from WaPo's ARCOS API samples
+from https://wpinvestigative.github.io/arcos/
+
+<img src="https://user-images.githubusercontent.com/7624639/71302473-42fb4580-2379-11ea-9a24-ab07d9c57d71.png" width="45%"></img> <img src="https://user-images.githubusercontent.com/7624639/71302474-42fb4580-2379-11ea-9205-68d59844ab20.png" width="45%"></img> 
+
+### Using R to identify suspicious pharmacies; verifying results from raw data via PySpark
+<img src="https://user-images.githubusercontent.com/7624639/71302475-42fb4580-2379-11ea-904e-85699768bb13.png" width="45%"></img> <img src="https://user-images.githubusercontent.com/7624639/71302498-7938c500-2379-11ea-8f68-8ed904e0c46f.PNG" width="45%"></img>
+
+### Draft Queries to Dive Deeper into Raw Opioid Data; Python to blend results with Social Vulnerability Index
+ <img src="https://user-images.githubusercontent.com/7624639/71302499-7938c500-2379-11ea-8e10-044c7188bec2.PNG" width="45%"></img> <img src="https://user-images.githubusercontent.com/7624639/71302479-4db5da80-2379-11ea-91f5-bbee836e47d9.png" width="45%"></img> 
+ 
+Here, we show who the most suspicious pharmacy bought from (doubled their McKesson orders in just 7 years; added a major oxycodone souce from Eckerd). We also can see that the flood of prescription opioids correlates with **rural, poorer counties with higher disability rates**.
 
 ----
 ## What files are here?
